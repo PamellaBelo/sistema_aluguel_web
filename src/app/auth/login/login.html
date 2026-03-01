@@ -1,0 +1,13 @@
+<h2>Login</h2>
+
+<input type="email" [(ngModel)]="email" placeholder="Email">
+<input type="password" [(ngModel)]="senha" placeholder="Senha">
+
+<button (click)="login()">Entrar</button>
+
+  <p>
+    Não tem conta?
+    <a routerLink="/register">Criar conta</a>
+  </p>
+
+<p style="color: red;">{{ erro }}</p>

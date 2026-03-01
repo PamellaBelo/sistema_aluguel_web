@@ -1,0 +1,9 @@
+<h2>Registro</h2>
+
+<input [(ngModel)]="nome" placeholder="Nome">
+<input [(ngModel)]="email" placeholder="Email">
+<input [(ngModel)]="senha" type="password" placeholder="Senha">
+
+<button (click)="register()">Cadastrar</button>
+
+<p style="color:red">{{ erro }}</p>
