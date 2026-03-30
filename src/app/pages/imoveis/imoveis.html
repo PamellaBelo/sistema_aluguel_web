@@ -1,0 +1,226 @@
+<div>
+  <div class="page-header">
+    <div>
+      <h1>Imóveis</h1>
+      <p class="page-sub">Gerencie seu portfólio de imóveis e unidades</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirNovo()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Novo Imóvel
+    </button>
+  </div>
+
+  <div class="card">
+    <div *ngIf="loading" class="empty-state">Carregando...</div>
+    <div *ngIf="!loading && imoveis.length === 0" class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="4" y="2" width="16" height="20"/><line x1="9" y1="22" x2="9" y2="2"/>
+        <line x1="15" y1="22" x2="15" y2="2"/>
+      </svg>
+      <p>Nenhum imóvel cadastrado</p>
+    </div>
+
+    <table *ngIf="!loading && imoveis.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>Endereço</th>
+          <th>Unidades</th>
+          <th style="text-align:right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let im of imoveis">
+          <td class="mono muted">{{ im.id }}</td>
+          <td><strong>{{ im.nome }}</strong></td>
+          <td class="muted">{{ im.endereco || '—' }}</td>
+          <td>
+            <span class="badge badge-info">
+              {{ im.totalUnidades }} unidade{{ im.totalUnidades !== 1 ? 's' : '' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-ghost btn-sm" (click)="abrirEditar(im)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deletar(im.id)">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Novo Imóvel -->
+<div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="4" y="2" width="16" height="20"/><line x1="9" y1="22" x2="9" y2="2"/>
+      </svg>
+      Novo Imóvel
+    </h2>
+    <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+    <div style="display:flex; flex-direction:column; gap:.85rem;">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" [(ngModel)]="form.nome" placeholder="Ex: Edifício Central" autofocus />
+      </div>
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" [(ngModel)]="form.endereco" placeholder="Ex: Rua das Flores, 123 — Recife, PE" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando || !form.nome.trim()">
+        {{ salvando ? 'Salvando...' : 'Salvar e continuar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Adicionar Unidade (pós-criação) -->
+<div class="modal-overlay" *ngIf="showModalUnidade" (click)="fecharModalUnidade()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="success-header">
+      <div class="success-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div>
+        <h2 style="margin-bottom:.1rem">Imóvel criado!</h2>
+        <p class="modal-hint">Adicione unidades em <strong>{{ imovelCriadoNome }}</strong></p>
+      </div>
+    </div>
+    <div *ngIf="erroUnidade" class="error-msg">{{ erroUnidade }}</div>
+    <div class="input-row">
+      <div class="form-group" style="flex:1">
+        <label>Nome da Unidade</label>
+        <input type="text" [(ngModel)]="nomeUnidade" placeholder="Ex: Bloco A, Ap. 101"
+               (keydown.enter)="salvarUnidadeNova()" autofocus />
+      </div>
+      <button class="btn btn-primary" style="margin-top:1.4rem" (click)="salvarUnidadeNova()"
+              [disabled]="salvandoNovaUnidade || !nomeUnidade.trim()">
+        {{ salvandoNovaUnidade ? '...' : 'Adicionar' }}
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" (click)="fecharModalUnidade()">Concluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar Imóvel completo -->
+<div class="modal-overlay" *ngIf="showModalEditar" (click)="fecharModalEditar()">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Editar Imóvel
+    </h2>
+
+    <!-- Dados do imóvel -->
+    <div class="edit-section">
+      <p class="section-label">Dados gerais</p>
+      <div style="display:flex; flex-direction:column; gap:.85rem;">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" [(ngModel)]="formEditar.nome" placeholder="Nome do imóvel" />
+        </div>
+        <div class="form-group">
+          <label>Endereço</label>
+          <input type="text" [(ngModel)]="formEditar.endereco" placeholder="Endereço completo" />
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:.85rem;">
+        <button class="btn btn-primary btn-sm" (click)="salvarEdicao()"
+                [disabled]="salvandoEditar || !formEditar.nome.trim()">
+          {{ salvandoEditar ? 'Salvando...' : 'Salvar dados' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Unidades -->
+    <div class="edit-section">
+      <p class="section-label">Unidades</p>
+
+      <!-- Adicionar nova -->
+      <div class="input-row" style="margin-bottom:.85rem;">
+        <div class="form-group" style="flex:1">
+          <label>Nova Unidade</label>
+          <input type="text" [(ngModel)]="novaUnidade" placeholder="Ex: Bloco B, Ap. 202"
+                 (keydown.enter)="adicionarUnidade()" />
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:1.4rem"
+                (click)="adicionarUnidade()" [disabled]="salvandoUnidade || !novaUnidade.trim()">
+          {{ salvandoUnidade ? '...' : 'Adicionar' }}
+        </button>
+      </div>
+
+      <div *ngIf="erroUnidade" class="error-msg">{{ erroUnidade }}</div>
+
+      <!-- Lista de unidades -->
+      <div *ngIf="loadingUnidades" class="empty-state" style="padding:1.5rem">Carregando...</div>
+      <div *ngIf="!loadingUnidades && unidades.length === 0" class="empty-state" style="padding:1.5rem">
+        <p>Nenhuma unidade ainda</p>
+      </div>
+
+      <div *ngIf="!loadingUnidades && unidades.length > 0" class="unidades-list">
+        <div *ngFor="let u of unidades" class="unidade-item">
+          <!-- Modo edição -->
+          <ng-container *ngIf="editandoUnidadeId === u.id">
+            <input class="unidade-input" type="text" [(ngModel)]="editandoUnidadeNome"
+                   (keydown.enter)="salvarEditarUnidade(u)"
+                   (keydown.escape)="cancelarEditarUnidade()" autofocus />
+            <div class="unidade-actions">
+              <button class="btn btn-primary btn-sm" (click)="salvarEditarUnidade(u)"
+                      [disabled]="salvandoUnidadeEdit">
+                {{ salvandoUnidadeEdit ? '...' : 'Salvar' }}
+              </button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelarEditarUnidade()">Cancelar</button>
+            </div>
+          </ng-container>
+
+          <!-- Modo visualização -->
+          <ng-container *ngIf="editandoUnidadeId !== u.id">
+            <div class="unidade-info">
+              <span class="unidade-nome">{{ u.nome }}</span>
+              <span class="badge" [ngClass]="statusClass(u.status)">{{ statusLabel(u.status) }}</span>
+            </div>
+            <div class="unidade-actions">
+              <button class="btn btn-ghost btn-sm" (click)="iniciarEditarUnidade(u)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deletarUnidade(u.id)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" (click)="fecharModalEditar()">Fechar</button>
+    </div>
+  </div>
+</div>

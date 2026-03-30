@@ -1,0 +1,3 @@
+.currency { font-family: 'DM Mono', monospace; font-size: .875rem; }
+.btn-sm { padding: .3rem .75rem; font-size: .8rem; }
+.modal-hint { color: var(--muted); font-size: .82rem; margin-bottom: 1.25rem; margin-top: -.75rem; }

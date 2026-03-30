@@ -1,0 +1,64 @@
+<div>
+    <div class="page-header">
+      <h1>Pagamentos</h1>
+      <button class="btn btn-primary" (click)="abrirModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Registrar Pagamento
+      </button>
+    </div>
+  
+    <div class="card">
+      <div *ngIf="loading" class="empty-state">Carregando...</div>
+      <div *ngIf="!loading && pagamentos.length === 0" class="empty-state"><p>Nenhum pagamento registrado</p></div>
+      <table *ngIf="!loading && pagamentos.length > 0">
+        <thead>
+          <tr><th>Inquilino</th><th>Casa</th><th>Mês Ref.</th><th>Valor</th><th>Data Pgto</th><th>Status</th><th style="text-align:right">Ações</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pagamentos">
+            <td><strong>{{ p.nomeInquilino }}</strong></td>
+            <td>{{ p.nomeUnidade }} — {{ p.nomeImovel }}
+            </td>
+            <td>{{ formatMes(p.mesReferencia) }}</td>
+            <td class="currency">{{ formatCurrency(p.valorPago) }}</td>
+            <td>{{ formatDate(p.dataPagamento) }}</td>
+            <td><span class="badge" [ngClass]="badgeClass(p.status)">{{ statusLabels[p.status] }}</span></td>
+            <td style="text-align:right">
+              <button class="btn btn-danger btn-sm" (click)="deletar(p.id)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Registrar Pagamento</h2>
+      <p class="modal-hint">Valor calculado automaticamente. Status definido pela data (após dia 10 = Atrasado).</p>
+      <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Contrato</label>
+          <select [(ngModel)]="form.contratoId">
+            <option [ngValue]="null" disabled>Selecione o contrato</option>
+            <option *ngFor="let c of contratos" [ngValue]="c.id">Casa {{ c.nomeUnidade }} — {{ c.nomeInquilino }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data do Pagamento</label>
+          <input type="date" [(ngModel)]="form.dataPagamento" />
+        </div>
+        <div class="form-group">
+          <label>Mês de Referência</label>
+          <input type="month" [(ngModel)]="form.mesReferencia" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+        <button class="btn btn-success" (click)="salvar()" [disabled]="salvando">
+          {{ salvando ? 'Registrando...' : 'Registrar' }}
+        </button>
+      </div>
+    </div>
+  </div>

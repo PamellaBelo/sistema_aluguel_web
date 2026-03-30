@@ -1,42 +1,65 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, tap } from 'rxjs';
 
+export interface AuthResponse {
+  id: number;
+  nome: string;
+  email: string;
+  token: string;
+}
 
-@Injectable({
-    providedIn: 'root'
-  })
-export class AuthService{
+export interface LoginRequest {
+  email: string;
+  senha: string;
+}
 
-    private API = 'http://localhost:8080/auth';
+export interface RegisterRequest {
+  nome: string;
+  email: string;
+  senha: string;
+}
 
-    constructor(private http: HttpClient) {}
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private apiUrl = 'http://localhost:8080';
 
-    login(email: string, senha: string): Observable<string> {
-        return this.http.post(
-          `${this.API}/login`,
-          { email, senha },
-          { responseType: 'text' } // 👈 ESSA LINHA É A CHAVE
-        );
-      }
+  constructor(private http: HttpClient, private router: Router) {}
 
-    register(nome: string, email: string, senha: string): Observable<any> {
-        return this.http.post(`${this.API}/register`, {nome, email, senha});
-    }
+  login(data: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, data).pipe(
+      tap(res => this.saveSession(res))
+    );
+  }
 
-    saveToken(token: string){
-        localStorage.setItem('token', token);
-    }
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, data).pipe(
+      tap(res => this.saveSession(res))
+    );
+  }
 
-    getToken(){
-        return localStorage.getItem('token');
-    }
+  private saveSession(res: AuthResponse): void {
+    localStorage.setItem('token', res.token);
+    localStorage.setItem('user', JSON.stringify({ id: res.id, nome: res.nome, email: res.email }));
+  }
 
-    isLogged(): boolean {
-        return !!this.getToken();
-    }
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/login']);
+  }
 
-    logout(){
-        localStorage.removeItem('token');
-    }
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  getUser(): { id: number; nome: string; email: string } | null {
+    const u = localStorage.getItem('user');
+    return u ? JSON.parse(u) : null;
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
 }

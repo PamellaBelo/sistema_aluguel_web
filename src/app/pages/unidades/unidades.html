@@ -1,0 +1,43 @@
+<div>
+    <div class="page-header">
+      <h1>Unidades</h1>
+      <button class="btn btn-primary" (click)="abrirModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Unidade
+      </button>
+    </div>
+  
+    <div class="card">
+      <div *ngIf="loading" class="empty-state">Carregando...</div>
+      <div *ngIf="!loading && unidades.length === 0" class="empty-state"><p>Nenhuma unidade cadastrada</p></div>
+      <table *ngIf="!loading && unidades.length > 0">
+        <thead><tr><th>#</th><th>Nome</th><th style="text-align:right">Ações</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let u of unidades">
+            <td class="id-cell">{{ u.id }}</td>
+            <td><strong>{{ u.nome }}</strong></td>
+            <td style="text-align:right">
+              <button class="btn btn-danger btn-sm" (click)="deletar(u.id)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Nova Unidade</h2>
+      <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+      <div class="form-group">
+        <label>Nome da Unidade</label>
+        <input type="text" [(ngModel)]="nome" placeholder="Ex: Residencial Aurora" (keydown.enter)="salvar()" autofocus />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="abrirModal()" [disabled]="salvando || !nome.trim()">
+          {{ salvando ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+  </div>

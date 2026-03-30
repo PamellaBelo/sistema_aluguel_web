@@ -1,0 +1,62 @@
+<div>
+    <div class="page-header">
+      <h1>Inquilinos</h1>
+      <button class="btn btn-primary" (click)="abrirNovo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Inquilino
+      </button>
+    </div>
+  
+    <div class="card">
+      <div *ngIf="loading" class="empty-state">Carregando...</div>
+      <div *ngIf="!loading && inquilinos.length === 0" class="empty-state"><p>Nenhum inquilino cadastrado</p></div>
+      <table *ngIf="!loading && inquilinos.length > 0">
+        <thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>E-mail</th><th style="text-align:right">Ações</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let i of inquilinos">
+            <td><strong>{{ i.nome }}</strong></td>
+            <td class="mono">{{ i.cpf }}</td>
+            <td>{{ i.telefone }}</td>
+            <td class="muted">{{ i.email }}</td>
+            <td style="text-align:right">
+              <div class="action-btns">
+                <button class="btn btn-ghost btn-sm" (click)="abrirEditar(i)">Editar</button>
+                <button class="btn btn-danger btn-sm" (click)="deletar(i.id)">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ editandoId ? 'Editar Inquilino' : 'Novo Inquilino' }}</h2>
+      <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome</label>
+          <input type="text" [(ngModel)]="form.nome" placeholder="Nome completo" />
+        </div>
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="text" [(ngModel)]="form.cpf" placeholder="000.000.000-00" />
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input type="text" [(ngModel)]="form.telefone" placeholder="(81) 99999-9999" />
+        </div>
+        <div class="form-group full">
+          <label>E-mail</label>
+          <input type="email" [(ngModel)]="form.email" placeholder="inquilino@email.com" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="salvar()" [disabled]="salvando || !form.nome">
+          {{ salvando ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+  </div>

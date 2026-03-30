@@ -1,0 +1,100 @@
+.page-sub { font-size: .8125rem; color: var(--text3); margin-top: .15rem; }
+
+// Modal largo para edição completa
+.modal-lg { max-width: 620px !important; }
+
+// Seções dentro do modal editar
+.edit-section {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.section-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  margin-bottom: .75rem;
+}
+
+// Input + botão lado a lado
+.input-row {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-end;
+}
+
+// Lista de unidades
+.unidades-list {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.unidade-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .6rem .75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color .12s;
+  min-height: 42px;
+}
+.unidade-item:hover { border-color: var(--border2); }
+
+.unidade-info {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex: 1;
+  min-width: 0;
+}
+.unidade-nome {
+  font-size: .8375rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unidade-actions { display: flex; gap: .3rem; flex-shrink: 0; }
+
+.unidade-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: .35rem .65rem;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: .8375rem;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+// Success header (modal pós-criação)
+.success-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  margin-bottom: 1.25rem;
+}
+.success-header h2 { margin-bottom: 0 !important; }
+.success-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(63,185,80,.12);
+  border: 1px solid rgba(63,185,80,.25);
+  color: var(--success);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-hint { font-size: .8125rem; color: var(--text3); margin: 0; }
