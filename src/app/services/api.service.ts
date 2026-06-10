@@ -175,4 +175,23 @@ export class ApiService {
   deletarPagamento(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/pagamentos/${id}`);
   }
+
+  editarPagamento(id: number, data: {
+    contratoId: number; dataPagamento: string; mesReferencia: string;
+  }): Observable<Pagamento> {
+    return this.http.put<Pagamento>(`${this.base}/pagamentos/${id}`, data);
+  }
+
+  editarContrato(id: number, data: {
+    unidadeId: number; inquilinoId: number;
+    valorAluguel: number; dataInicio: string; dataFim: string;
+  }): Observable<Contrato> {
+    return this.http.put<Contrato>(`${this.base}/contratos/${id}`, data);
+  }
+  
+  editarConta(id: number, data: {
+    contratoId: number; tipo: string; valor: number; vencimento: string;
+  }): Observable<Conta> {
+    return this.http.put<Conta>(`${this.base}/contas/${id}`, data);
+  }
 }

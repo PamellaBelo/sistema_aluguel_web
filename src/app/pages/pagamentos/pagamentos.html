@@ -1,50 +1,91 @@
 <div>
-    <div class="page-header">
+  <div class="page-header">
+    <div>
       <h1>Pagamentos</h1>
-      <button class="btn btn-primary" (click)="abrirModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Registrar Pagamento
-      </button>
+      <p class="page-sub">Histórico de pagamentos dos contratos</p>
     </div>
-  
-    <div class="card">
-      <div *ngIf="loading" class="empty-state">Carregando...</div>
-      <div *ngIf="!loading && pagamentos.length === 0" class="empty-state"><p>Nenhum pagamento registrado</p></div>
-      <table *ngIf="!loading && pagamentos.length > 0">
-        <thead>
-          <tr><th>Inquilino</th><th>Casa</th><th>Mês Ref.</th><th>Valor</th><th>Data Pgto</th><th>Status</th><th style="text-align:right">Ações</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of pagamentos">
-            <td><strong>{{ p.nomeInquilino }}</strong></td>
-            <td>{{ p.nomeUnidade }} — {{ p.nomeImovel }}
-            </td>
-            <td>{{ formatMes(p.mesReferencia) }}</td>
-            <td class="currency">{{ formatCurrency(p.valorPago) }}</td>
-            <td>{{ formatDate(p.dataPagamento) }}</td>
-            <td><span class="badge" [ngClass]="badgeClass(p.status)">{{ statusLabels[p.status] }}</span></td>
-            <td style="text-align:right">
-              <button class="btn btn-danger btn-sm" (click)="deletar(p.id)">Excluir</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <button class="btn btn-primary" (click)="abrirNovo()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Registrar Pagamento
+    </button>
   </div>
-  
-  <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h2>Registrar Pagamento</h2>
-      <p class="modal-hint">Valor calculado automaticamente. Status definido pela data (após dia 10 = Atrasado).</p>
-      <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+
+  <div class="card">
+    <div *ngIf="loading" class="empty-state">Carregando...</div>
+    <div *ngIf="!loading && pagamentos.length === 0" class="empty-state">
+      <p>Nenhum pagamento registrado</p>
+    </div>
+
+    <table *ngIf="!loading && pagamentos.length > 0">
+      <thead>
+        <tr>
+          <th>Inquilino</th>
+          <th>Unidade</th>
+          <th>Imóvel</th>
+          <th>Mês Ref.</th>
+          <th>Valor</th>
+          <th>Data Pgto</th>
+          <th>Status</th>
+          <th style="text-align:right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of pagamentos">
+          <td><strong>{{ p.nomeInquilino }}</strong></td>
+          <td>{{ p.nomeUnidade }}</td>
+          <td class="muted">{{ p.nomeImovel }}</td>
+          <td>{{ formatMes(p.mesReferencia) }}</td>
+          <td class="mono">{{ formatCurrency(p.valorPago) }}</td>
+          <td class="muted">{{ formatDate(p.dataPagamento) }}</td>
+          <td><span class="badge" [ngClass]="badgeClass(p.status)">{{ statusLabels[p.status] }}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-ghost btn-sm" (click)="abrirEditar(p)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deletar(p.id)">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="5" width="20" height="14" rx="2"/>
+        <line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      {{ editandoId ? 'Editar Pagamento' : 'Registrar Pagamento' }}
+    </h2>
+
+    <p class="modal-hint" *ngIf="!editandoId">
+      O valor é calculado automaticamente. Status definido pela data (após dia 10 = Atrasado).
+    </p>
+
+    <div *ngIf="erro" class="error-msg">{{ erro }}</div>
+
+    <div style="display:flex; flex-direction:column; gap:.85rem;">
+      <div class="form-group">
+        <label>Contrato</label>
+        <select [(ngModel)]="form.contratoId" [disabled]="!!editandoId">
+          <option [ngValue]="null" disabled>Selecione o contrato</option>
+          <option *ngFor="let c of contratos" [ngValue]="c.id">
+            {{ c.nomeUnidade }} — {{ c.nomeInquilino }}
+          </option>
+        </select>
+      </div>
       <div class="form-grid">
-        <div class="form-group full">
-          <label>Contrato</label>
-          <select [(ngModel)]="form.contratoId">
-            <option [ngValue]="null" disabled>Selecione o contrato</option>
-            <option *ngFor="let c of contratos" [ngValue]="c.id">Casa {{ c.nomeUnidade }} — {{ c.nomeInquilino }}</option>
-          </select>
-        </div>
         <div class="form-group">
           <label>Data do Pagamento</label>
           <input type="date" [(ngModel)]="form.dataPagamento" />
@@ -54,11 +95,13 @@
           <input type="month" [(ngModel)]="form.mesReferencia" />
         </div>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
-        <button class="btn btn-success" (click)="salvar()" [disabled]="salvando">
-          {{ salvando ? 'Registrando...' : 'Registrar' }}
-        </button>
-      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+      <button class="btn btn-success" (click)="salvar()" [disabled]="salvando">
+        {{ salvando ? 'Salvando...' : (editandoId ? 'Salvar' : 'Registrar') }}
+      </button>
     </div>
   </div>
+</div>

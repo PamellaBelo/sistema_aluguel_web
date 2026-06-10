@@ -8,7 +8,7 @@ import { ApiService, Contrato, Inquilino, Unidade } from '../../services/api.ser
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './contratos.html',
-  styleUrl: './contratos.scss'
+ //git  styleUrl: './contratos.scss'
 })
 export class Contratos implements OnInit {
   contratos: Contrato[] = [];
